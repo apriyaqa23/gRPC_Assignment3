@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+// Define the User entity
+message User {
+  string user_id = 1;
+}
+
+// Define the Post entity
+message Post {
+  string title = 1;
+  string text = 2;
+  string author = 3;
+  string video_url = 4;
+  string image_url = 5;
+  int32 score = 6;
+  enum State {
+    NORMAL = 0;
+    LOCKED = 1;
+    HIDDEN = 2;
+  }
+  State state = 7;
+  google.protobuf.Timestamp publication_date = 8;
+
+  string subreddit_name = 9;
+  repeated string tags = 10;
+}
+
+message Comment {
+  string text = 1;
+  string author = 2;
+  int32 score = 3;
+  enum State {
+    NORMAL = 0;
+    HIDDEN = 1;
+  }
+  State state = 4;
+  google.protobuf.Timestamp publication_date = 5;
+}
+
+// Extra Credit: New message for Subreddit
+message Subreddit {
+  string name = 1;
+  enum SubredditState {
+    PUBLIC = 0;
+    PRIVATE = 1;
+    HIDDEN = 2;
+  }
+  SubredditState state = 2;
+  repeated string tags = 3;
+}
+
+// Service definition
+service RedditService {
+  // Create a Post
+  rpc CreatePost(Post) returns (Post) {}
+
+  // Upvote or downvote a Post
+  rpc VotePost(VotePostRequest) returns (Post) {}
+
+  // Retrieve Post content
+  rpc GetPost(GetPostRequest) returns (Post) {}
+
+  // Create a Comment
+  rpc CreateComment(CreateCommentRequest) returns (Comment) {}
+
+  // Upvote or downvote a Comment
+  rpc VoteComment(VoteCommentRequest) returns (Comment) {}
+
+  // Retrieve N most upvoted comments under a post
+  rpc GetMostUpvotedComments(GetMostUpvotedCommentsRequest) returns (GetMostUpvotedCommentsResponse) {}
+
+  // Expand a comment branch
+  rpc ExpandCommentBranch(ExpandCommentBranchRequest) returns (ExpandCommentBranchResponse) {}
+
+  // Extra credit: Monitor updates
+  rpc MonitorUpdates(MonitorUpdatesRequest) returns (stream MonitorUpdatesResponse) {}
+}
+
+// Request and response message definitions for each method
+message VotePostRequest {
+  string post_id = 1;
+  bool upvote = 2;
+}
+
+message GetPostRequest {
+  string post_id = 1;
+}
+
+message CreateCommentRequest {
+  string post_id = 1;
+  Comment comment = 2;
+}
+
+message VoteCommentRequest {
+  string comment_id = 1;
+  bool upvote = 2;
+}
+
+message GetMostUpvotedCommentsRequest {
+  string post_id = 1;
+  int32 N = 2;
+}
+
+message GetMostUpvotedCommentsResponse {
+  repeated Comment comments = 1;
+  repeated bool has_replies = 2;
+}
+
+message ExpandCommentBranchRequest {
+  string comment_id = 1;
+  int32 N = 2;
+}
+
+message ExpandCommentBranchResponse {
+  repeated Comment comments = 1;
+  repeated bool has_replies = 2;
+}
+
+message MonitorUpdatesRequest {
+  string post_id = 1;
+  repeated string comment_ids = 2;
+}
+
+message MonitorUpdatesResponse {
+  Post post = 1;
+  repeated Comment comments = 2;
+}
+
